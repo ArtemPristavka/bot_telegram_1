@@ -2,11 +2,10 @@ from create_bot import bot
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from keyboard_for_bot import inline_kb_to_choice_genre, inline_kb_to_choice_next_page
-from keyboard_for_bot import genre
 from api_requests import get_start_info_high, remove_photo
 from aiogram.utils.callback_data import CallbackDataFilter
 from all_class.fsm_class import High
-from all_class.factory_callback import answer_on_genre, show_more
+from all_class.factory_callback import answer_on_genre, show_more, choice_genre
 
 __all__ = ['register_callback_query_high']
 
@@ -78,7 +77,7 @@ async def callback_answer_no_genre(callback: types.CallbackQuery, state: FSMCont
                            text='Еще показать?',
                            reply_markup=inline_keyboard_for_next_page)
 
-    await callback.answer('Смотри!')
+    # await callback.answer('Смотри!')
 
 
 async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -103,8 +102,9 @@ async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMCont
     # Переход в машинное состояние: ожидание просмотра следующей страницы
     await High.page.set()
     # Записываем данные в память FSMState
+    genre_from_callback = callback.data.split(':')[2]
     async with state.proxy() as data_storage:
-        data_storage['genre'] = callback.data
+        data_storage['genre'] = genre_from_callback
         data_storage['search'] = 'top_rated_250'
         data_storage['page'] = 1
 
@@ -128,7 +128,8 @@ async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMCont
     await bot.send_message(chat_id=callback.from_user.id,
                            text='Еще показать?',
                            reply_markup=inline_keyboard_for_next_page)
-    await callback.answer(text='Смотри!')
+
+    # await callback.answer(text='Смотри!')
 
 
 async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -174,7 +175,8 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
     await bot.send_message(chat_id=callback.from_user.id,
                            text='Еще показать?',
                            reply_markup=inline_keyboard_for_next_page)
-    await callback.answer(text='Смотри!')
+
+    # await callback.answer(text='Смотри!')
 
 
 async def dont_show_page(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -199,7 +201,7 @@ def register_callback_query_high(dp: Dispatcher):
                                        state=High.answer)
 
     dp.register_callback_query_handler(callback_broadcast_genre,
-                                       lambda callback: callback.data in genre.keys(),
+                                       CallbackDataFilter(factory=choice_genre, config={'type': 'info'}),
                                        state=High.genre)
 
     dp.register_callback_query_handler(show_next_page_user,

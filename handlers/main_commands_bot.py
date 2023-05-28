@@ -1,5 +1,5 @@
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher import FSMContext, filters
 from create_bot import bot  # dp - это что бы не забывать про диспетчер
 from keyboard_for_bot import keyboard_for_start_command, keyboard_for_help_command, inline_kb_to_answer_the_genre
 from all_class.fsm_class import High, Low
@@ -101,8 +101,8 @@ def register_main_handlers(dp: Dispatcher) -> None:
     """
     Регистрирую обработчики сообщений для использования в основном файле
     """
-    dp.register_message_handler(callback=start_command, commands=['start'])
-    dp.register_message_handler(callback=help_command, commands=['help'])
-    dp.register_message_handler(callback=high_command, commands=['high'])
-    dp.register_message_handler(callback=low_command, commands=['low'])
-    dp.register_message_handler(callback=cancel_command, commands=['cancel'], state='*')
+    dp.register_message_handler(callback=start_command, commands=filters.CommandStart().commands)
+    dp.register_message_handler(callback=help_command, commands=filters.CommandHelp().commands)
+    dp.register_message_handler(callback=high_command, commands=filters.Command('high').commands)
+    dp.register_message_handler(callback=low_command, commands=filters.Command('low').commands)
+    dp.register_message_handler(callback=cancel_command, commands=filters.Command('cancel').commands, state='*')

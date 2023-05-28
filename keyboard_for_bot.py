@@ -1,7 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from typing import Tuple, Dict
-from all_class import answer_on_genre, show_more
+from all_class import answer_on_genre, show_more, choice_genre
 
 __all__ = ['keyboard_for_start_command', 'keyboard_for_help_command', 'inline_kb_to_answer_the_genre',
            'inline_kb_to_choice_genre', 'inline_kb_to_choice_next_page', 'genre']
@@ -108,11 +108,11 @@ def inline_kb_to_choice_genre() -> InlineKeyboardMarkup:
 
     for i_en, i_ru in genre.items():
         if count % 2 == 0:
-            ikb.insert(InlineKeyboardButton(text=i_ru, callback_data=i_en))
+            ikb.insert(InlineKeyboardButton(text=i_ru, callback_data=choice_genre.new(type='info', choice=i_en)))
             count += 1
             continue
 
-        ikb.add(InlineKeyboardButton(text=i_ru, callback_data=i_en))
+        ikb.add(InlineKeyboardButton(text=i_ru, callback_data=choice_genre.new(type='info', choice=i_en)))
         count += 1
 
     return ikb
