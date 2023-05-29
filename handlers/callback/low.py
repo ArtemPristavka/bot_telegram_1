@@ -57,18 +57,27 @@ async def callback_answer_no_genre(callback: types.CallbackQuery, state: FSMCont
         data_storage['page'] = 1
 
     data_from_state = await state.get_data()
-    print(f'\nДанные из показа если не выбирали жанр: \n\t{data_from_state}')
+    # print(f'\nДанные из показа если не выбирали жанр: \n\t{data_from_state}')
 
     inline_keyboard_for_next_page = inline_kb_to_choice_next_page()
     info_string, photo_group = get_start_info_high(data_from_state)
+    media_photo = types.MediaGroup(photo_group)
+
+    # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
+    if info_string is None:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text='Прости, но нечего показать')
+        await state.finish()  # Сбрасываем состояние
+
+        return
 
     await types.ChatActions.typing(sleep=2)  # Имитируем что мы что-то пишем
     await types.ChatActions.upload_photo(sleep=2)  # Имитируем что мы загружаем фото
-    media_photo = types.MediaGroup(photo_group)
 
+    # Отправляем информацию о фильмах пользователю
     await bot.send_message(chat_id=callback.from_user.id,
                            text=info_string)
-
+    # Отправляем фотографии фильмов пользователю
     await bot.send_media_group(chat_id=callback.from_user.id,
                                media=media_photo)
     remove_photo()  # Удаляем фотографии после отправки
@@ -109,18 +118,27 @@ async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMCont
         data_storage['page'] = 1
 
     data_from_state = await state.get_data()
-    print(f'\nДанные из показа когда выбран жанр:\n\t{data_from_state}')
+    # print(f'\nДанные из показа когда выбран жанр:\n\t{data_from_state}')
 
     inline_keyboard_for_next_page = inline_kb_to_choice_next_page()
     info_string, photo_group = get_start_info_high(data_from_state)
+    media_photo = types.MediaGroup(photo_group)
+
+    # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
+    if info_string is None:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text='Прости, но нечего показать')
+        await state.finish()  # Сбрасываем состояние
+
+        return
 
     await types.ChatActions.typing(sleep=2)  # Имитируем что мы что-то пишем
     await types.ChatActions.upload_photo(sleep=2)  # Имитируем что мы загружаем фото
-    media_photo = types.MediaGroup(photo_group)
 
+    # Отправляем информацию о фильмах пользователю
     await bot.send_message(chat_id=callback.from_user.id,
                            text=info_string)
-
+    # Отправляем фотографии фильмов пользователю
     await bot.send_media_group(chat_id=callback.from_user.id,
                                media=media_photo)
     remove_photo()  # Удаляем фотографии после отправки
@@ -134,7 +152,7 @@ async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMCont
 
 async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) -> None:
     """
-    Функция описывает callback для показа следующей страницы
+    Функция описывает callback для показа следующей страницы или отмены просмотра
 
     photo_group: List
         Содержит список ссылок на интро-картины фильмов
@@ -151,41 +169,50 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
     media_photo: MediaGroup
         Передаем в нее список интро-картин фильмов
     """
-    # Записываем данные в память FSMState
-    async with state.proxy() as data_storage:
-        data_storage['page'] += 1
+    data_from_callback = callback.data.split(':')[2]
+    match data_from_callback:
+        case 'show_me':
+            # Записываем данные в память FSMState
+            async with state.proxy() as data_storage:
+                data_storage['page'] += 1
 
-    data_from_state = await state.get_data()
-    print(f'\nДанные из показа следующей страницы:\n\t{data_from_state}')
+            # Берем данные для передачи в функцию запроса к API
+            data_from_state = await state.get_data()
+            # print(f'\nДанные из показа следующей страницы:\n\t{data_from_state}')
 
-    info_string, photo_group = get_start_info_high(data_from_state)
-    inline_keyboard_for_next_page = inline_kb_to_choice_next_page()
+            info_string, photo_group = get_start_info_high(data_from_state)
+            inline_keyboard_for_next_page = inline_kb_to_choice_next_page()
+            media_photo = types.MediaGroup(photo_group)
 
-    await types.ChatActions.typing(sleep=2)  # Имитируем что мы что-то пишем
-    await types.ChatActions.upload_photo(sleep=3)  # Имитируем что мы загружаем фото
-    media_photo = types.MediaGroup(photo_group)
+            # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
+            if info_string is None:
+                await bot.send_message(chat_id=callback.from_user.id,
+                                       text='Прости, но нечего показать')
+                await state.finish()  # Сбрасываем состояние
 
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text=info_string)
+                return
 
-    await bot.send_media_group(chat_id=callback.from_user.id,
-                               media=media_photo)
-    remove_photo()  # Удаляем фотографии после отправки
+            await types.ChatActions.typing(sleep=2)  # Имитируем что мы что-то пишем
+            await types.ChatActions.upload_photo(sleep=3)  # Имитируем что мы загружаем фото
 
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text='Еще показать?',
-                           reply_markup=inline_keyboard_for_next_page)
+            # Отправляем информацию о фильмах пользователю
+            await bot.send_message(chat_id=callback.from_user.id,
+                                   text=info_string)
+            # Отправляем фотографии фильмов пользователю
+            await bot.send_media_group(chat_id=callback.from_user.id,
+                                       media=media_photo)
+            remove_photo()  # Удаляем фотографии после отправки
+            # Спрашиваем у пользователя хочет ли он посмотреть следующую страницу
+            await bot.send_message(chat_id=callback.from_user.id,
+                                   text='Еще показать?',
+                                   reply_markup=inline_keyboard_for_next_page)
 
-    # await callback.answer(text='Смотри!')
+            # await callback.answer(text='Смотри!')
 
-
-async def dont_show_page(callback: types.CallbackQuery, state: FSMContext) -> None:
-    """
-    Функция описывает callback если пользователю не надо показывать следующую страницу
-    """
-    await callback.answer(text='Ну нет так нет')  # Отвечаем
-    await state.finish()  # Выходим из машинного состояния
-    print('\nЯ все отменил, вышел из машинного состояния')
+        case 'dont_show':
+            await callback.answer(text='Ну нет так нет')  # Отвечаем
+            await state.finish()  # Выходим из машинного состояния
+            print('\nЯ все отменил, вышел из машинного состояния')
 
 
 def register_callback_query_low(dp: Dispatcher):
@@ -205,8 +232,5 @@ def register_callback_query_low(dp: Dispatcher):
                                        state=Low.genre)
 
     dp.register_callback_query_handler(show_next_page_user,
-                                       CallbackDataFilter(factory=show_more, config={'action': 'show_me'}),
-                                       state=Low.page)
-    dp.register_callback_query_handler(dont_show_page,
-                                       CallbackDataFilter(factory=show_more, config={'action': 'dont show'}),
+                                       CallbackDataFilter(factory=show_more, config={'type': 'info'}),
                                        state=Low.page)

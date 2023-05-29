@@ -1,8 +1,9 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext, filters
 from create_bot import bot  # dp - это что бы не забывать про диспетчер
-from keyboard_for_bot import keyboard_for_start_command, keyboard_for_help_command, inline_kb_to_answer_the_genre
-from all_class.fsm_class import High, Low
+from keyboard_for_bot import (keyboard_for_start_command, keyboard_for_help_command,
+                              inline_kb_to_answer_the_genre, inline_kb_to_choice_rated)
+from all_class.fsm_class import High, Low, Custom
 
 __all__ = ['register_main_handlers']
 
@@ -76,6 +77,18 @@ async def low_command(message: types.Message) -> None:
                            reply_markup=inline_keyboard)
 
 
+async def custom_command(message: types.Message) -> None:
+    # Переход в машинное состояние: ожидание ответа от пользователя о рейтинге
+    await Custom.rated.set()
+    inline_keyboard = inline_kb_to_choice_rated()
+
+    await types.ChatActions.typing(sleep=2)  # Имитируем человека(показываем что бот что-то пишет)
+    await bot.send_message(chat_id=message.from_user.id,
+                           text='Приступим. Выбери с каким <b>рейтингом</b> искать будем!',
+                           parse_mode='HTML',
+                           reply_markup=inline_keyboard)
+
+
 async def cancel_command(message: types.Message, state: FSMContext) -> None:
     """
     Функция описывает команду /cancel для бота, для сброса машинного состония и выполнения команды
@@ -87,11 +100,12 @@ async def cancel_command(message: types.Message, state: FSMContext) -> None:
 
     match get_fsm:
         case None:  # Если нет состояния
-            print('Сбрасывать нечего. Мы в обычном состоянии')
+            # print('Сбрасывать нечего. Мы в обычном состоянии')
+            pass
 
         case _:  # Если есть состояние
             await state.finish()
-            print('\nЯ все отменил, вышел из машинного состояния')
+            # print('\nЯ все отменил, вышел из машинного состояния')
 
             await bot.send_message(chat_id=message.from_user.id,
                                    text='Я все отменил)))')
@@ -103,6 +117,7 @@ def register_main_handlers(dp: Dispatcher) -> None:
     """
     dp.register_message_handler(callback=start_command, commands=filters.CommandStart().commands)
     dp.register_message_handler(callback=help_command, commands=filters.CommandHelp().commands)
-    dp.register_message_handler(callback=high_command, commands=filters.Command('high').commands)
-    dp.register_message_handler(callback=low_command, commands=filters.Command('low').commands)
-    dp.register_message_handler(callback=cancel_command, commands=filters.Command('cancel').commands, state='*')
+    dp.register_message_handler(callback=high_command, commands=['high'])
+    dp.register_message_handler(callback=low_command, commands=['low'])
+    dp.register_message_handler(callback=custom_command, commands=['custom'])
+    dp.register_message_handler(callback=cancel_command, commands=['cancel'], state='*')

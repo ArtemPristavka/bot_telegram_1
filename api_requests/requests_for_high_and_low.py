@@ -5,10 +5,10 @@ from .check_photo import download_photo
 import json
 import requests
 
-__all__ = ['get_start_info_high']
+__all__ = ['get_start_info_high', 'handler_response']
 
 
-def get_start_info_high(user_data: Dict) -> Tuple[str, List[types.InputMediaPhoto]]:
+def get_start_info_high(user_data: Dict) -> Tuple[str, List[types.InputMediaPhoto]] | Tuple[None, None]:
     """
     Функциия выполняет запрос к API и при помощи других функций формирует ответ
 
@@ -56,6 +56,10 @@ def get_start_info_high(user_data: Dict) -> Tuple[str, List[types.InputMediaPhot
                             params=querystring)
 
     data = json.loads(response.text)
+    # Проверяем, если внутри ничего нет, то возвращем None
+    if data['entries'] == 0:
+        return None, None
+
     all_info = handler_response(data)
     info_string = handler_string(all_info)
     photos = download_photo(all_info)

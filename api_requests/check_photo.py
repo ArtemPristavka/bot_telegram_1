@@ -91,4 +91,4 @@ def remove_photo() -> None:
         if i_name.endswith('.jpg'):
             path_delete = os.path.join(path_in_dir, i_name)
             os.remove(path_delete)
-            print(f'Удалили файл: {path_delete}')
+            # print(f'Удалили файл: {path_delete}')
