@@ -1,4 +1,3 @@
-from create_bot import bot  # dp
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from keyboard_for_bot import inline_kb_to_choice_genre, inline_kb_to_choice_next_page
@@ -24,9 +23,9 @@ async def callback_answer_genre(callback: types.CallbackQuery) -> None:
 
     await types.ChatActions.typing(sleep=2)
 
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text='Хорошо. Выбери жанр, они ниже:',
-                           reply_markup=inline_keyboard)
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text='Хорошо. Выбери жанр, они ниже:',
+                                    reply_markup=inline_keyboard)
 
 
 async def callback_answer_no_genre(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -65,8 +64,8 @@ async def callback_answer_no_genre(callback: types.CallbackQuery, state: FSMCont
 
     # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
     if info_string is None:
-        await bot.send_message(chat_id=callback.from_user.id,
-                               text='Прости, но нечего показать')
+        await callback.bot.send_message(chat_id=callback.from_user.id,
+                                        text='Прости, но нечего показать')
         await state.finish()  # Сбрасываем состояние
 
         return
@@ -75,18 +74,16 @@ async def callback_answer_no_genre(callback: types.CallbackQuery, state: FSMCont
     await types.ChatActions.upload_photo(sleep=2)  # Имитируем что мы загружаем фото
 
     # Отправляем информацию о фильмах пользователю
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text=info_string)
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text=info_string)
     # Отправляем фотографии фильмов пользователю
-    await bot.send_media_group(chat_id=callback.from_user.id,
-                               media=media_photo)
+    await callback.bot.send_media_group(chat_id=callback.from_user.id,
+                                        media=media_photo)
     remove_photo()  # Удаляем фотографии после отправки
 
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text='Еще показать?',
-                           reply_markup=inline_keyboard_for_next_page)
-
-    # await callback.answer('Смотри!')
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text='Еще показать?',
+                                    reply_markup=inline_keyboard_for_next_page)
 
 
 async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -126,8 +123,8 @@ async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMCont
 
     # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
     if info_string is None:
-        await bot.send_message(chat_id=callback.from_user.id,
-                               text='Прости, но нечего показать')
+        await callback.bot.send_message(chat_id=callback.from_user.id,
+                                        text='Прости, но нечего показать')
         await state.finish()  # Сбрасываем состояние
 
         return
@@ -136,18 +133,16 @@ async def callback_broadcast_genre(callback: types.CallbackQuery, state: FSMCont
     await types.ChatActions.upload_photo(sleep=2)  # Имитируем что мы загружаем фото
 
     # Отправляем информацию о фильмах пользователю
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text=info_string)
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text=info_string)
     # Отправляем фотографии фильмов пользователю
-    await bot.send_media_group(chat_id=callback.from_user.id,
-                               media=media_photo)
+    await callback.bot.send_media_group(chat_id=callback.from_user.id,
+                                        media=media_photo)
     remove_photo()  # Удаляем фотографии после отправки
 
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text='Еще показать?',
-                           reply_markup=inline_keyboard_for_next_page)
-
-    # await callback.answer(text='Смотри!')
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text='Еще показать?',
+                                    reply_markup=inline_keyboard_for_next_page)
 
 
 async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -186,8 +181,8 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
 
             # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
             if info_string is None:
-                await bot.send_message(chat_id=callback.from_user.id,
-                                       text='Прости, но нечего показать')
+                await callback.bot.send_message(chat_id=callback.from_user.id,
+                                                text='Прости, но нечего показать')
                 await state.finish()  # Сбрасываем состояние
 
                 return
@@ -196,18 +191,16 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
             await types.ChatActions.upload_photo(sleep=3)  # Имитируем что мы загружаем фото
 
             # Отправляем информацию о фильмах пользователю
-            await bot.send_message(chat_id=callback.from_user.id,
-                                   text=info_string)
+            await callback.bot.send_message(chat_id=callback.from_user.id,
+                                            text=info_string)
             # Отправляем фотографии фильмов пользователю
-            await bot.send_media_group(chat_id=callback.from_user.id,
-                                       media=media_photo)
+            await callback.bot.send_media_group(chat_id=callback.from_user.id,
+                                                media=media_photo)
             remove_photo()  # Удаляем фотографии после отправки
             # Спрашиваем у пользователя хочет ли он посмотреть следующую страницу
-            await bot.send_message(chat_id=callback.from_user.id,
-                                   text='Еще показать?',
-                                   reply_markup=inline_keyboard_for_next_page)
-
-            # await callback.answer(text='Смотри!')
+            await callback.bot.send_message(chat_id=callback.from_user.id,
+                                            text='Еще показать?',
+                                            reply_markup=inline_keyboard_for_next_page)
 
         case 'dont_show':
             await callback.answer(text='Ну нет так нет')  # Отвечаем

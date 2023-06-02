@@ -1,4 +1,3 @@
-from create_bot import bot
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.callback_data import CallbackDataFilter
@@ -7,7 +6,6 @@ from all_class.factory_callback import choice_rated, choice_genre
 from keyboard_for_bot import inline_kb_to_choice_genre, inline_kb_to_choice_next_page
 from api_requests import get_start_info_custom, remove_photo
 from all_class import show_more
-
 
 __all__ = ['register_callback_query_handler_custom']
 
@@ -40,10 +38,10 @@ async def get_answer_rated(callback: types.CallbackQuery, state: FSMContext) -> 
     inline_keyboard = inline_kb_to_choice_genre()  # Получаем инлайн-клавиатуру
 
     await types.ChatActions.typing(sleep=2)  # Имитируем что мы что-то пишем
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text='Хорошо, теперь выбери <b>жанр</b> по которому будем искать!',
-                           parse_mode='HTML',
-                           reply_markup=inline_keyboard)
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text='Хорошо, теперь выбери <b>жанр</b> по которому будем искать!',
+                                    parse_mode='HTML',
+                                    reply_markup=inline_keyboard)
 
 
 async def get_answer_genre(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -63,11 +61,11 @@ async def get_answer_genre(callback: types.CallbackQuery, state: FSMContext) -> 
         data_storage['genre'] = genre_from_callback
 
     await types.ChatActions.typing(sleep=2)  # Имитируем что мы что-то пишем
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text='Хорошо, теперь введи <b>год</b> с которого мы будем искать в формате 0000, '
-                                'к сожалению мы сейчас обновляем базу, но фильмы все до 2020 года доступны '
-                                'для поиска',
-                           parse_mode='HTML')
+    await callback.bot.send_message(chat_id=callback.from_user.id,
+                                    text='Хорошо, теперь введи <b>год</b> с которого мы будем искать в формате 0000, '
+                                         'к сожалению мы сейчас обновляем базу, но фильмы все до 2020 года доступны '
+                                         'для поиска',
+                                    parse_mode='HTML')
 
 
 async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -105,8 +103,8 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
 
             # Проверяем если в info_string пришло None, уведомляем пользователя о том что ничего нет
             if info_string is None:
-                await bot.send_message(chat_id=callback.from_user.id,
-                                       text='Прости, но нечего показать')
+                await callback.bot.send_message(chat_id=callback.from_user.id,
+                                                text='Прости, но нечего показать')
                 await state.finish()  # Сбрасываем состояние
 
                 return
@@ -115,23 +113,21 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
             await types.ChatActions.upload_photo(sleep=3)  # Имитируем что мы загружаем фото
 
             # Отправляем информацию о фильмах пользователю
-            await bot.send_message(chat_id=callback.from_user.id,
-                                   text=info_string)
+            await callback.bot.send_message(chat_id=callback.from_user.id,
+                                            text=info_string)
             # Отправляем фотографии фильмов пользователю
-            await bot.send_media_group(chat_id=callback.from_user.id,
-                                       media=media_photo)
+            await callback.bot.send_media_group(chat_id=callback.from_user.id,
+                                                media=media_photo)
             remove_photo()  # Удаляем фотографии после отправки
 
-            await bot.send_message(chat_id=callback.from_user.id,
-                                   text='Еще показать?',
-                                   reply_markup=inline_keyboard_for_next_page)
-
-            await callback.answer(text='Смотри!')
+            await callback.bot.send_message(chat_id=callback.from_user.id,
+                                            text='Еще показать?',
+                                            reply_markup=inline_keyboard_for_next_page)
 
         case 'dont_show':
             await callback.answer(text='Ну нет так нет')  # Отвечаем
             await state.finish()  # Выходим из машинного состояния
-            print('\nЯ все отменил, вышел из машинного состояния')
+            # print('\nЯ все отменил, вышел из машинного состояния')
 
 
 def register_callback_query_handler_custom(dp: Dispatcher) -> None:
