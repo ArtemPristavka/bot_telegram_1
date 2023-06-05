@@ -6,6 +6,7 @@ from all_class.factory_callback import choice_rated, choice_genre
 from keyboard_for_bot import inline_kb_to_choice_genre, inline_kb_to_choice_next_page
 from api_requests import get_start_info_custom, remove_photo
 from all_class import show_more
+from work_a_data_base import insert_into_data_base
 
 __all__ = ['register_callback_query_handler_custom']
 
@@ -90,6 +91,11 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
     data_from_callback = callback.data.split(':')[2]
     match data_from_callback:
         case 'show_me':
+            # Отправляем данные для записи в БД
+            data = {'name': callback.from_user.full_name,
+                    'history': 'Просмотр след. страницы фильмов с определёнными  характеристиками'}
+            insert_into_data_base(data)
+
             # Записываем данные в память FSMState
             async with state.proxy() as data_storage:
                 data_storage['page'] += 1

@@ -34,12 +34,13 @@ def keyboard_for_help_command() -> Tuple[str, ReplyKeyboardMarkup]:
                   '/<b>low</b> - выводит топ фильмов с плохим рейтингом\n' \
                   '/<b>custom</b> - вывод фильмов по заданным параметрам\n' \
                   '/<b>cancel</b> - отмена, сброс\n' \
-                  '/<b>help</b> - выводит список команд'
+                  '/<b>help</b> - выводит список команд\n ' \
+                  '/<b>history</b> - показать историю'
 
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
     keyboard.add(KeyboardButton(text='/high')).insert(KeyboardButton(text='/low'))
     keyboard.add(KeyboardButton(text='/custom')).insert(KeyboardButton(text='/help'))
-    keyboard.add(KeyboardButton(text='/cancel'))
+    keyboard.add(KeyboardButton(text='/cancel')).insert(KeyboardButton(text='/history'))
 
     return description, keyboard
 

@@ -5,6 +5,7 @@ from api_requests import get_start_info_high, remove_photo
 from aiogram.utils.callback_data import CallbackDataFilter
 from all_class.fsm_class import High
 from all_class.factory_callback import answer_on_genre, show_more, choice_genre
+from work_a_data_base import insert_into_data_base
 
 __all__ = ['register_callback_query_high']
 
@@ -169,6 +170,11 @@ async def show_next_page_user(callback: types.CallbackQuery, state: FSMContext) 
     data_from_callback = callback.data.split(':')[2]
     match data_from_callback:
         case 'show_me':
+            # Отправляем данные для записи в БД
+            data = {'name': callback.from_user.full_name,
+                    'history': 'Просмотр след. страницы фильмов с высоким рейтингом'}
+            insert_into_data_base(data)
+
             # Увеличиваем страницу для вывода информации пользователю
             async with state.proxy() as data_storage:
                 data_storage['page'] += 1

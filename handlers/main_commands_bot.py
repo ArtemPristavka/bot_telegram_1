@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext, filters
 from keyboard_for_bot import (keyboard_for_start_command, keyboard_for_help_command,
                               inline_kb_to_answer_the_genre, inline_kb_to_choice_rated)
 from all_class.fsm_class import High, Low, Custom
+from work_a_data_base import insert_into_data_base, get_data_from_data_base
 
 __all__ = ['register_main_handlers']
 
@@ -22,6 +23,15 @@ async def start_command(message: types.Message) -> None:
                                         '\nНажмите /<b>help</b> что бы увидеть список команд.',
                                    parse_mode='HTML',
                                    reply_markup=keyboard)
+
+
+async def history_command(message: types.Message) -> None:
+
+    info_history = get_data_from_data_base(message.from_user.full_name)  # Получаем историю из БД
+
+    await types.ChatActions.typing(sleep=2)  # Имитируем человека(показываем что бот что-то пишет)
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text=info_history)
 
 
 async def help_command(message: types.Message) -> None:
@@ -54,6 +64,11 @@ async def high_command(message: types.Message) -> None:
     await High.answer.set()
     inline_keyboard = inline_kb_to_answer_the_genre()
 
+    # Отправляем данные для записи в БД
+    data = {'name': message.from_user.full_name,
+            'history': 'Запрос фильмов с высоким рейтингом'}
+    insert_into_data_base(data)
+
     await types.ChatActions.typing(sleep=2)  # Имитируем человека(показываем что бот что-то пишет)
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Хорошо. Просто вывести <b>топ фильмов</b> или выберишь <b>жанр</b>?\n',
@@ -69,6 +84,11 @@ async def low_command(message: types.Message) -> None:
     await Low.answer.set()
     inline_keyboard = inline_kb_to_answer_the_genre()
 
+    # Отправляем данные для записи в БД
+    data = {'name': message.from_user.full_name,
+            'history': 'Запрос фильмов с низким рейтингом'}
+    insert_into_data_base(data)
+
     await types.ChatActions.typing(sleep=2)  # Имитируем человека(показываем что бот что-то пишет)
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Хорошо. Просто вывести <b>топ фильмов</b> или выберишь <b>жанр</b>?\n',
@@ -80,6 +100,11 @@ async def custom_command(message: types.Message) -> None:
     # Переход в машинное состояние: ожидание ответа от пользователя о рейтинге
     await Custom.rated.set()
     inline_keyboard = inline_kb_to_choice_rated()
+
+    # Отправляем данные для записи в БД
+    data = {'name': message.from_user.full_name,
+            'history': 'Запрос фильмов с определёнными  характеристиками'}
+    insert_into_data_base(data)
 
     await types.ChatActions.typing(sleep=2)  # Имитируем человека(показываем что бот что-то пишет)
     await message.bot.send_message(chat_id=message.from_user.id,
@@ -119,4 +144,5 @@ def register_main_handlers(dp: Dispatcher) -> None:
     dp.register_message_handler(callback=high_command, commands=['high'])
     dp.register_message_handler(callback=low_command, commands=['low'])
     dp.register_message_handler(callback=custom_command, commands=['custom'])
+    dp.register_message_handler(callback=history_command, commands=['history'])
     dp.register_message_handler(callback=cancel_command, commands=['cancel'], state='*')

@@ -5,6 +5,7 @@ import handlers
 import os
 from dotenv import load_dotenv
 from aiogram.utils.exceptions import ValidationError
+from work_a_data_base import creating_data_base
 
 
 def register_handlers(dp) -> None:
@@ -35,4 +36,5 @@ def main():
 if __name__ == '__main__':
     if not os.path.exists('storage_photo'):
         os.mkdir('storage_photo')
+    creating_data_base()
     main()
